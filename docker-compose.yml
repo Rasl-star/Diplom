@@ -1,0 +1,49 @@
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: aqa
+    volumes:
+      - ./mysql:/docker-entrypoint-initdb.d
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: aqa
+    volumes:
+      - ./postgres:/docker-entrypoint-initdb.d
+
+
+  gate-simulator:
+    image: node:18
+    container_name: gate-simulator
+    ports:
+      - "9999:9999"
+    working_dir: /app
+    command: npm start
+    volumes:
+      - ./gate-simulator:/app
+
+  sut:
+    image: openjdk:17
+    container_name: sut
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../sut:/app
+    working_dir: /app
+    command: java -jar aqa-shop.jar
+    depends_on:
+      - mysql
+      - postgres
+      - gate-simulator
