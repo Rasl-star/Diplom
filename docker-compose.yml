@@ -1,3 +1,4 @@
+version: "3.8"
 
 services:
   mysql:
@@ -23,16 +24,15 @@ services:
     volumes:
       - ./postgres:/docker-entrypoint-initdb.d
 
-
   gate-simulator:
-    image: node:18
+    build:
+      context: ./gate-simulator
     container_name: gate-simulator
     ports:
       - "9999:9999"
-    working_dir: /app
-    command: npm start
-    volumes:
-      - ./gate-simulator:/app
+    depends_on:
+      - mysql
+      - postgres
 
   sut:
     image: openjdk:17
@@ -42,7 +42,13 @@ services:
     volumes:
       - ../sut:/app
     working_dir: /app
-    command: java -jar aqa-shop.jar
+    command: >
+      java -jar aqa-shop.jar
+      --spring.credit-gate.url=http://gate-simulator:9999/credit
+      --spring.payment-gate.url=http://gate-simulator:9999/payment
+      --spring.datasource.url=jdbc:mysql://localhost:3306/aqa
+      --spring.datasource.username=root
+      --spring.datasource.password=root
     depends_on:
       - mysql
       - postgres
