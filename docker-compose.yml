@@ -1,55 +1,10 @@
-version: "3.8"
-
 services:
   mysql:
-    image: mysql:8.0
-    container_name: mysql
+    image:  mysql:8.0.34
     ports:
-      - "3306:3306"
+      - '3306:3306'
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: aqa
-    volumes:
-      - ./mysql:/docker-entrypoint-initdb.d
-
-  postgres:
-    image: postgres:15
-    container_name: postgres
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: aqa
-    volumes:
-      - ./postgres:/docker-entrypoint-initdb.d
-
-  gate-simulator:
-    build:
-      context: ./gate-simulator
-    container_name: gate-simulator
-    ports:
-      - "9999:9999"
-    depends_on:
-      - mysql
-      - postgres
-
-  sut:
-    image: openjdk:17
-    container_name: sut
-    ports:
-      - "8080:8080"
-    volumes:
-      - ../sut:/app
-    working_dir: /app
-    command: >
-      java -jar aqa-shop.jar
-      --spring.credit-gate.url=http://gate-simulator:9999/credit
-      --spring.payment-gate.url=http://gate-simulator:9999/payment
-      --spring.datasource.url=jdbc:mysql://localhost:3306/aqa
-      --spring.datasource.username=root
-      --spring.datasource.password=root
-    depends_on:
-      - mysql
-      - postgres
-      - gate-simulator
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
+      - MYSQL_DATABASE=app
+      - MYSQL_USER=app
+      - MYSQL_PASSWORD=pass
